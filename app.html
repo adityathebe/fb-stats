@@ -1,0 +1,121 @@
+<html>
+    <head>
+        <title>Facebook Analyzer</title>
+        <style>
+            #preview {
+                display: hidden;
+            }
+
+            #main-data, #display {
+                margin-top: 40px;
+            }
+
+            textarea {
+                height: 80%;
+                width: 100%;
+            }
+
+        </style>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <textarea id="main-data" class="form-control" class="form-control"placeholder="Enter the HTML here"> </textarea>
+                    <input type="button" class="btn btn-success" value="Submit" id="submit">
+                </div>
+
+                <div class="col-md-6" id="display">
+                    <div class="row">
+                        <p>Download your Facebook data from <b><a href="www.facebook.com/security">www.facebook.com/security</a> </b>. You'll receive a zip file in your email.
+                            Unzip it and inside the html folder look for <b>"security.htm"</b> file. Open that file in a text editor. 
+                            Copy the html in the textbox and click submit.
+                        </p>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div id="preview">
+                            <div id="preview-inside"></div>
+                        </div>
+                        <div id="stats">
+                            <h1 id='user'></h1>
+                            <h5 id="acc-deactivated"></h5>
+                            <h5 id="ip-addresses"></h5>
+                            <h5 id="pwd-changed"></h5>
+                            <h5 id="pic-changed"></h5>
+                            <h5 id="name-changed"></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>            
+
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script>
+            $('#submit').click(()=> {
+
+                // Grab HTML
+                let data = $('#main-data').val();
+                let html = $.parseHTML(data);
+                $('#preview-inside').empty().append(html);
+                $('#preview').hide();
+
+                // Remove Facebook CSS
+                $('#preview-inside style').remove();
+
+                // Username                    
+                let username = $('.contents h1:nth-child(1)').text();
+                $('#user').text(username);
+                
+                $('.contents ul').each((i, elm) => {
+                    if (i == 0) {
+                        let count = 0;
+                        $(elm).find('li').each((i, elm) => {
+                            let text = $(elm).text();
+                            if (text.search('Account Deactivated') === 0) {
+                                count++;
+                            }
+                        });
+                        $('#acc-deactivated').html(`Account Deactivated: ${count} times`);
+                    }
+                    
+                    // Ip Addresses
+                    if (i === 6) {
+                        let ip_addresses = $(elm).find('li');
+                        $('#ip-addresses').html(`Logged in from ${ip_addresses.length} IP addresses.`);
+                    }
+                    
+                    // Administrative Records
+                    if (i === 9) {
+                        let count = 0;
+                        let name_changed = 0;
+                        let profile_photo_removed = 0;
+                        
+                        $(elm).find('li').each((i, elm) => {
+                            let text = $(elm).text();
+                            if (text.search('Password Change') === 0) {
+                                count++;
+                            }
+                            
+                            if (text.search('Remove Profile Photo') === 0) {
+                                profile_photo_removed++;
+                            }
+                            
+                            if (text.search('Name Change') === 0) {
+                                name_changed++;
+                            }
+                            
+                        });
+                        
+                        $('#pwd-changed').text(`Password Changed: ${count} times.`);
+                        $('#pic-changed').text(`Profile Picture Changed: ${profile_photo_removed} times.`);
+                        $('#name-changed').text(`Name changed: ${name_changed} times.`);
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
